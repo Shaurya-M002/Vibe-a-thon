@@ -1,0 +1,19 @@
+{
+  "name": "governor",
+  "version": "0.1.0",
+  "description": "Codex-controlled budget and service tools with live Governor sessions.",
+  "author": {
+    "name": "Governor"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Governor",
+    "shortDescription": "Use budgeted service tools from Codex.",
+    "longDescription": "Codex stays the agent. Open a Governor session, call approved tools, inspect budget and receipts, and see every Governor tool call in the local app.",
+    "developerName": "Governor",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Use Governor to track this task and call its approved tools directly from Codex.",
+    "brandColor": "#ff5b13"
+  }
+}

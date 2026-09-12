@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "governor-agent"
+version = "0.1.0"
+description = "A Gemini agent with deterministic spending controls"
+requires-python = ">=3.12"
+dependencies = [
+  "google-genai>=2.23.0,<3",
+  "pydantic>=2.13.5,<3",
+  "python-dotenv>=1.2.3,<2",
+  "httpx>=0.28,<1",
+  "solders>=0.29,<0.30",
+  "x402==2.22.0",
+  "textual==8.2.8",
+]
+
+[project.scripts]
+governor = "governor.cli:main"
+governor-wallet = "governor.solana_wallet:main"
+governor-web = "governor.web:main"
+governor-vendor = "governor.vendor.server:main"
+governor-codex = "governor.codex_launcher:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1,<10", "pytest-asyncio>=1.4,<2", "ruff>=0.16,<0.17", "httpx>=0.28,<1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+governor = ["static/*", "static/assets/*"]
+"governor.vendor" = ["static/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

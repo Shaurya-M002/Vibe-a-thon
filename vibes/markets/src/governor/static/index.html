@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f4ef">
+  <meta name="description" content="Governor — give your agents freedom, keep your spending under control.">
+  <title>Governor / Control room</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="Governor home"><span class="brand-mark" aria-hidden="true">G</span><span>governor<span class="brand-dot">.</span></span></a>
+    <div class="workspace"><span class="workspace-symbol">⌘</span><div>Local workspace<small>DEVELOPER EDITION</small></div><span class="square-dot"></span></div>
+    <div class="nav-label">WORKSPACE / 01</div>
+    <nav aria-label="Main navigation">
+      <a href="#overview" data-view="overview"><span data-icon="grid"></span>Overview<span class="nav-index">01</span></a>
+      <a href="#sessions" data-view="sessions"><span data-icon="terminal"></span>Agent sessions<span class="nav-index">02</span></a>
+      <a href="#services" data-view="services"><span data-icon="blocks"></span>Services<span class="nav-index">03</span></a>
+      <a href="#wallet" data-view="wallet"><span data-icon="wallet"></span>Wallet<span class="nav-index">04</span></a>
+      <a href="#policy" data-view="policy"><span data-icon="shield"></span>Spending policy<span class="nav-index">05</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="guard-note"><span data-icon="shield"></span><strong>Freedom within limits.</strong><p>Your agent does the work.<br>Your rules hold the line.</p><div class="mini-blocks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="theme-switch" role="group" aria-label="Color theme"><button data-theme-choice="light" aria-pressed="true"><span data-icon="sun"></span>Light</button><button data-theme-choice="dark" aria-pressed="false"><span data-icon="moon"></span>Dark</button></div>
+      <div class="build-label"><span class="square-dot"></span> LOCAL BUILD <span>v0.1</span></div>
+    </div>
+  </aside>
+  <div class="app-shell">
+    <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb">Overview</strong></div><div class="topbar-right"><span class="network-badge"><span class="square-dot"></span> SOLANA DEVNET</span><span class="operator" title="Local operator">OP</span></div></header>
+    <main id="main" tabindex="-1">
+      <div id="connection-error" class="connection-error" role="alert" hidden></div>
+      <div class="page-heading"><div><div class="eyebrow" id="page-eyebrow">THE CONTROL ROOM</div><h1 id="page-title">Your agents. Your rules.</h1></div><button class="button button-outline compact" id="new-session"><span data-icon="plus"></span>New session</button></div>
+      <div id="view-content"></div>
+      <footer class="footer"><span><span class="square-dot"></span> GOVERNOR / SPENDING CONTROL FOR AGENTS</span><span>BUILT TO LET YOU BUILD. <span class="orange">↗</span></span></footer>
+    </main>
+  </div>
+  <dialog id="launch-dialog" aria-labelledby="launch-title">
+    <form id="launch-form">
+      <div class="dialog-top"><span class="eyebrow">NEW AGENT SESSION</span><button type="button" id="close-dialog" class="icon-button" aria-label="Close task launcher">×</button></div>
+      <h2 id="launch-title">Give it a mission<span class="orange">.</span></h2><p class="muted">You set the task. Governor enforces the limits.</p>
+      <label for="run-mode">EXECUTION MODE</label><select id="run-mode" name="mode"><option value="gemini">Gemini · live inference / mock payments</option><option value="gemini-devnet">Gemini · real Devnet vendor payments</option><option value="vendor-demo">Vendor demo · transfer 0.002 Devnet USDC</option><option value="demo">Sandbox · hard-cap demo</option><option value="runway-demo">Sandbox · budget runway demo</option></select>
+      <label for="task">YOUR TASK</label><textarea id="task" name="task" rows="5" maxlength="20000" required placeholder="Summarize this text using an approved service. Stay within the budget and fall back locally if needed…"></textarea>
+      <div class="task-presets"><button type="button" data-preset="budget">Check budget</button><button type="button" data-preset="summary">Try a summary</button><button type="button" data-preset="refusal">Test a refusal</button></div>
+      <label class="checkbox-label discovery-checkbox" for="discover-vendors"><input type="checkbox" id="discover-vendors" checked> Run a vendor scout in parallel with this mission.</label><p class="fine-print discovery-launch-note">Search Bazaar, compare vendors and show a live recommendation. Discovery is advisory; listed sellers cannot receive payments yet. Scout inference is billed separately.</p>
+      <details class="plan-input"><summary>Optional task list → enable budget runway</summary><label for="task-list">ONE TEXT ITEM PER LINE · PRIORITY ORDER</label><textarea id="task-list" rows="4" maxlength="60000" placeholder="summary | First document to process.&#10;summary | Second document to process."></textarea><p class="fine-print">Use type | text, or text alone for a summary. Costs are learned separately per type. Up to 100 unique items; at least 3 completed samples per remaining type are needed.</p><label class="checkbox-label" for="allow-local"><input type="checkbox" id="allow-local"> I accept local extractive fallback for these items.</label></details>
+      <div id="launch-policy" class="launch-policy"></div><p id="mode-note" class="fine-print">Gemini inference uses your configured Google credentials. Model costs are separate from the simulated USDC budget.</p>
+      <p id="launch-error" role="alert" class="form-error" hidden></p>
+      <button class="button button-primary full" id="submit-run" type="submit">Launch agent <span data-icon="arrow"></span></button>
+    </form>
+  </dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

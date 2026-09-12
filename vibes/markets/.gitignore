@@ -1,0 +1,5 @@
+.governor/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+*.sqlite3*
