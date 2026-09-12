@@ -1,0 +1,13 @@
+.venv/
+data/raw/
+data/processed/
+adapters/
+models/
+dist/
+logs/
+vendor/
+.pytest_cache/
+*.gguf
+*.safetensors
+__pycache__/
+.DS_Store

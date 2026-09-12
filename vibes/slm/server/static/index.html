@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SLM cleaner — raw vs cleaned</title>
+<style>
+  :root { color-scheme: dark; --bg:#0f1115; --panel:#171a21; --line:#272c36; --dim:#8b93a7; --ok:#4ade80; --bad:#f87171; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:#e8ecf4; font:15px/1.55 ui-sans-serif,-apple-system,"SF Pro Text",Segoe UI,sans-serif; }
+  header { padding:20px 24px 8px; }
+  h1 { margin:0; font-size:19px; }
+  .meta { color:var(--dim); font-size:13px; margin-top:4px; }
+  main { padding:16px 24px 40px; }
+  .cols { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:820px) { .cols { grid-template-columns:1fr; } }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+  .panel h2 { margin:0 0 10px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); font-weight:600; }
+  textarea { width:100%; min-height:150px; resize:vertical; background:#0c0e13; color:#e8ecf4; border:1px solid var(--line); border-radius:8px; padding:11px; font:inherit; }
+  textarea:focus { outline:none; border-color:#3b4457; }
+  #out { min-height:150px; white-space:pre-wrap; background:#0c0e13; border:1px solid var(--line); border-radius:8px; padding:11px; }
+  #out:empty::before { content:"(empty — filler only)"; color:var(--dim); }
+  .bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:14px 0; }
+  button { background:#2a6ff5; color:#fff; border:0; border-radius:8px; padding:9px 18px; font:inherit; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  select { background:var(--panel); color:#e8ecf4; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit; }
+  .stat { color:var(--dim); font-size:13px; }
+  .viol { margin-top:12px; border:1px solid #5b2626; background:#231414; color:#fca5a5; border-radius:8px; padding:10px 12px; font-size:14px; }
+  .viol b { color:#fecaca; }
+  .fixtures { margin-top:22px; }
+  .fixtures button { background:#222734; color:#c9d2e3; font-weight:500; font-size:13px; padding:6px 11px; margin:0 6px 6px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Raw ASR &rarr; cleaned</h1>
+  <div class="meta" id="health">connecting…</div>
+</header>
+
+<main>
+  <div class="bar">
+    <select id="style">
+      <option value="chat">chat</option>
+      <option value="bullets">bullets</option>
+      <option value="email">email</option>
+      <option value="code">code</option>
+    </select>
+    <button id="go">Clean</button>
+    <span class="stat" id="stat"></span>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Raw (what Hex/Musly hands over)</h2>
+      <textarea id="in" placeholder="so um send it to rahul no wait rohan"></textarea>
+    </div>
+    <div class="panel">
+      <h2>Cleaned</h2>
+      <div id="out"></div>
+    </div>
+  </div>
+
+  <div id="violations"></div>
+
+  <div class="fixtures panel">
+    <h2>Fixtures</h2>
+    <div id="fx"></div>
+  </div>
+</main>
+
+<script>
+const SAMPLES = [
+  ["self-correction", "so um send it to rahul no wait rohan", "chat"],
+  ["rupees + date", "the invoice came to twenty thousand rupees and it's due on march third twenty twenty six", "chat"],
+  ["time fix", "let's meet at nine a m sorry ten thirty", "chat"],
+  ["must not invent", "uh mail priya about the delay", "chat"],
+  ["spoken address", "send the deck to ananya at skan dot ai before the call", "chat"],
+  ["code", "run git checkout dash b vibe slash slm", "code"],
+  ["filler only", "um uh like you know", "chat"],
+  ["email", "hey vikram just wanted to check if the devnet token moved thanks meera", "email"],
+  ["titled plan", "Okay, so there are three things in my plan. First, I need to go to Hyderabad, and then from there, I need to go to Orissa, and then from there, I need to come back to Vijayawada.", "bullets"],
+  ["action items", "action items from the standup first review the pull request second update the roadmap and third pay the vendor", "bullets"],
+  ["dictated list", "So, okay, so okay, let's. I'm just testing this. So, there are three points first, go to Hyderabad, second, go to Bhoneswar, and third, I need to go to Delhi.", "bullets"],
+  ["list + numbers", "okay so three things first pay rohan twenty thousand rupees second the call is at nine thirty p m and third book the ticket to chennai", "bullets"],
+  ["asked for bullets", "make this bullet points um first charge the laptops second confirm the venue and third order the sensors", "chat"],
+];
+
+const $in = document.getElementById("in");
+const $out = document.getElementById("out");
+const $stat = document.getElementById("stat");
+const $go = document.getElementById("go");
+const $style = document.getElementById("style");
+const $viol = document.getElementById("violations");
+
+for (const [label, text, style] of SAMPLES) {
+  const b = document.createElement("button");
+  b.textContent = label;
+  b.onclick = () => { $in.value = text; $style.value = style; clean(); };
+  document.getElementById("fx").appendChild(b);
+}
+
+async function health() {
+  try {
+    const r = await fetch("/healthz").then(r => r.json());
+    document.getElementById("health").textContent = `backend ${r.backend} · model ${r.model}`;
+  } catch {
+    document.getElementById("health").textContent = "server not reachable";
+  }
+}
+
+async function clean() {
+  $go.disabled = true;
+  $stat.textContent = "…";
+  $viol.innerHTML = "";
+  try {
+    const r = await fetch("/v1/clean", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: $in.value, style: $style.value }),
+    }).then(r => r.json());
+    $out.textContent = r.cleaned;
+    $stat.textContent = `${r.latency_ms} ms · ${r.backend}`;
+    if (r.violations.length) {
+      $viol.innerHTML = `<div class="viol"><b>Guard refused ${r.violations.length} item(s).</b><br>` +
+        r.violations.map(v => `${v.kind}: <code>${v.value}</code> — ${v.reason}`).join("<br>") + `</div>`;
+    }
+  } catch (e) {
+    $stat.textContent = "error: " + e.message;
+  }
+  $go.disabled = false;
+}
+
+$go.onclick = clean;
+$in.addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") clean(); });
+health();
+</script>
+</body>
+</html>
