@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Elita • Spatial explorer</title>
+    <link rel="stylesheet" href="style.css?v=21" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./node_modules/three/build/three.module.js",
+          "three/addons/": "./node_modules/three/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="./"
+        >N<span>↗</span><small>NAVSENSE / ELITA PROMENADE</small></a
+      ><span class="header-note">Your routes. One place.</span>
+    </header>
+    <main>
+      <aside>
+        <p class="eyebrow">BENGALURU · JP NAGAR</p>
+        <h1>Your journey<span>.</span></h1>
+        <section>
+          <p class="eyebrow">RECORDING & PLAYBACK</p>
+          <select id="collection" hidden>
+            <option value="all">All recordings</option></select
+          ><label
+            >Recording<select id="session">
+              <option>Loading recordings…</option>
+            </select></label
+          ><label
+            >Route overlay<select id="route">
+              <option value="gps">Recorded GPS</option>
+              <option value="steps">Steps + phone direction</option>
+              <option value="both">Compare both</option>
+              <option value="none">Buildings only</option>
+            </select></label
+          ><label
+            ><input id="elevated" type="checkbox" checked /> Show relative
+            height</label
+          ><label
+            >Playback speed<select id="playSpeed">
+              <option value="1">1×</option>
+              <option value="2">2×</option>
+              <option value="5" selected>5×</option>
+              <option value="10">10×</option>
+            </select></label
+          >
+          <div class="transport">
+            <button id="play" aria-label="Play recording">▶</button
+            ><input
+              id="time"
+              aria-label="Recording time"
+              type="range"
+              min="0"
+              max="190"
+              step="0.1"
+              value="0"
+            /><output id="clock">0:00</output>
+          </div>
+          <div class="stats">
+            <div>
+              <strong id="stepCount">0</strong><small>detected steps</small>
+            </div>
+            <div>
+              <strong id="rise">0 m</strong
+              ><small>relative pressure height</small>
+            </div>
+          </div>
+          <button id="climb">Inspect possible climb ↗</button>
+          <p id="story" class="hint"></p>
+        </section>
+        <section>
+          <p class="eyebrow">MAP VIEW</p>
+          <div class="buttons">
+            <button id="oblique" class="active">3D view</button
+            ><button id="top">2D map</button
+            ><button id="fitRoute">Fit route</button
+            ><button id="focus">Find A5</button
+            ><button id="interiorPlan">Apartment floor plan</button>
+          </div>
+          <input id="whole" type="checkbox" checked hidden /><label
+            ><input id="facades" type="checkbox" checked /> Illustrative façades
+            & roof frames</label
+          ><label
+            ><input id="ghost" type="checkbox" /> Transparent buildings</label
+          >
+          <details class="model-settings">
+            <summary>Building & path settings</summary>
+            <div class="calibration">
+              <label
+                >Above-ground levels
+                <select id="levels">
+                  <option value="19">19 · lower-count scenario</option>
+                  <option value="20" selected>
+                    20 · OSM-supported baseline
+                  </option>
+                  <option value="21">21 · upper-count scenario</option>
+                </select></label
+              ><label
+                >Floor-to-floor height
+                <output id="storeyValue">3.00 m · assumed</output
+                ><input
+                  id="storey"
+                  type="range"
+                  min="2.8"
+                  max="3.3"
+                  step="0.05"
+                  value="3"
+              /></label>
+              <div class="heightresult">
+                <b id="heightValue">60.0 m</b
+                ><span>estimated slab-stack height</span>
+              </div>
+              <p class="hint" id="heightRange">
+                20 levels × 3.00 m. Sensitivity: 56–66 m at 2.8–3.3 m per level;
+                roof structures excluded.
+              </p>
+              <p class="hint">
+                The contractor confirms 10 towers in A and 7 in B. Its photo is
+                consistent with ~20 floor bands. Ground-level counting and floor
+                heights are not surveyed.
+              </p>
+              <label
+                >Highlight a level <output id="levelValue">Off</output
+                ><input
+                  id="slice"
+                  type="range"
+                  min="0"
+                  max="20"
+                  step="1"
+                  value="0"
+              /></label>
+            </div>
+            <a class="auditlink" href="audit.html"
+              >Inspect street map & path alignment ↗</a
+            ><label
+              ><input id="showRoads" type="checkbox" checked /> Internal
+              driveways & mapped paths</label
+            ><label
+              >Driveway width <output id="widthValue">6.0 m · assumed</output
+              ><input
+                id="roadWidth"
+                type="range"
+                min="3"
+                max="8"
+                step="0.5"
+                value="6"
+            /></label>
+            <p class="hint" id="pathSummary"></p>
+          </details>
+        </section>
+        <section>
+          <p class="eyebrow">MAP UNDER THE MODEL</p>
+          <label
+            >Basemap<select id="groundMap">
+              <option value="osm" selected>OpenStreetMap</option>
+              <option value="satellite">Satellite · Esri</option>
+              <option value="grid">Plain ground</option>
+            </select></label
+          >
+          <p class="hint" id="groundCredit"></p>
+          <p class="hint">
+            Video-informed model · approximate dimensions and feature placement.
+          </p>
+        </section>
+        <section class="finding">
+          <span class="eyebrow">DID WE START AT A5?</span>
+          <h3>A5 is a plausible match.</h3>
+          <p>
+            Google Maps places A5 about <b>15 m</b> from the first outbound GPS
+            fix. That fix reports ±10.2 m accuracy. This supports the vicinity,
+            not an exact doorway.
+          </p>
+          <a
+            href="https://www.google.com/maps/search/?api=1&query=A5+Elita+Promenade"
+            target="_blank"
+            rel="noreferrer"
+            >Inspect A5 on Google Maps ↗</a
+          >
+        </section>
+      </aside>
+      <div class="scene-column">
+        <div id="journeyOverview" class="journey-overview"></div>
+        <div id="stage">
+          <canvas
+            id="scene"
+            aria-label="Interactive 3D model of Elita Promenade"
+          ></canvas>
+          <div class="scene-heading">
+            <div>
+              <span class="eyebrow" id="phaseLabel"
+                >ELITA PROMENADE / BOTH PHASES</span
+              >
+              <h2 id="viewTitle">A new perspective.</h2>
+            </div>
+            <div class="scene-actions">
+              <button id="stageFullscreen">Fullscreen</button
+              ><button id="stageFit" title="Fit the current view">Fit</button
+              ><button id="reset" title="Reset camera">↺ Reset</button>
+            </div>
+          </div>
+          <div id="labels"></div>
+          <div id="loading">Building your view…</div>
+          <div class="legend">
+            <span><i style="background: #2485ff"></i>GPS</span
+            ><span><i style="background: #ed9e39"></i>Step estimate</span
+            ><span><i style="background: #b883ee"></i>Height change</span
+            ><span><i style="background: #56d3b0"></i>Start</span>
+          </div>
+          <div class="scene-bottom">
+            <span>Drag to orbit · scroll to zoom · right-drag to pan</span
+            ><span>Metres · north arrow on ground</span>
+          </div>
+        </div>
+        <div id="interiorToolbar" hidden>
+          <div class="buttons">
+            <button id="interiorBack">← Community map</button
+            ><button id="interiorTop">2D plan</button
+            ><button id="interiorOrbit">3D view</button
+            ><button id="interiorEntry">At the entrance</button
+            ><button id="interiorWallMode">Full-height walls</button
+            ><button id="interiorFurnish">Hide furniture</button
+            ><button id="interiorDownload">Download model</button>
+          </div>
+        </div>
+        <div class="below">
+          <div>
+            <p class="eyebrow">READING THE MODEL</p>
+            <p id="routeNote">
+              The blue trace is the recorded GPS, including its drift. Start and
+              end pins show recorded fixes, not confirmed doors.
+            </p>
+          </div>
+          <div>
+            <p class="eyebrow">TAKE IT WITH YOU</p>
+            <button class="download" id="exportModel">
+              Download current model .OBJ ↓
+            </button>
+            <p class="hint" id="exportHelp">
+              Buildings and paths · OBJ format.
+            </p>
+          </div>
+        </div>
+        <section id="journeyEvidence" class="journey-evidence">
+          <div class="evidence-heading">
+            <div>
+              <p class="eyebrow">UNDERSTAND THE WALK</p>
+              <h2>Height & movement</h2>
+            </div>
+            <label
+              >Event sensitivity<select id="eventThreshold">
+                <option value="1">Sensitive · 1 m</option>
+                <option value="2" selected>Balanced · 2 m</option>
+                <option value="3">Stricter · 3 m</option>
+              </select></label
+            >
+          </div>
+          <p class="hint">
+            Click a graph to move playback. Sensor traces use one-second
+            summaries. Height comes from pressure relative to this recording’s
+            start; it does not identify a floor.
+          </p>
+          <div id="journeyHeight" class="sensor-chart"></div>
+          <div id="journeySteps" class="sensor-chart"></div>
+          <p class="hint">
+            Step bars show walking activity, not the number of stair treads.
+          </p>
+          <div id="journeyEvents"></div>
+          <div id="journeySensors"></div>
+          <details>
+            <summary>GPS quality & radio signals</summary>
+            <div id="journeyGPS" class="sensor-chart"></div>
+            <p id="journeyGPSHelp" class="hint"></p>
+            <div id="journeyRadio" class="sensor-chart"></div>
+            <p class="hint">
+              Green = Wi-Fi; purple = Bluetooth LE. These are distinct device
+              identifiers, not position fixes.
+            </p>
+          </details>
+        </section>
+      </div>
+    </main>
+    <footer>
+      Built from public map geometry + your sensor recordings. A spatial
+      hypothesis, not a surveyed digital twin.
+    </footer>
+    <script type="module" src="app.js?v=21"></script>
+  </body>
+</html>
