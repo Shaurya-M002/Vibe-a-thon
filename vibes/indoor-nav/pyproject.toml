@@ -1,0 +1,9 @@
+[project]
+name = "navsense-reconstruction"
+version = "0.1.0"
+description = "Offline sensor-only walking reconstruction with explicit ambiguity"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.24,<3"]
+
+[tool.uv]
+package = false

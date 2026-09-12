@@ -1,0 +1,20 @@
+# Local sensor exports and derived recordings
+output/
+data/
+*.sqlite*
+*.db
+*.zip
+*.mp4
+*.mov
+apartment/evidence/
+apartment/elita-*.obj
+# Dependencies, caches, and local configuration
+.venv/
+node_modules
+__pycache__/
+*.py[cod]
+.ruff_cache/
+.env
+.env.*
+!.env.example
+.DS_Store
